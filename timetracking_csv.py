@@ -494,35 +494,7 @@ class MainWindow(QMainWindow):
         
         # Set up the user interface
         self.setup_ui()
-    
-    def setup_initial_projects(self):
-        """Set up initial projects if none exist."""
-        # Show message explaining the importance of setting up projects
-        QMessageBox.information(
-            self,
-            "Project Setup Required",
-            "You need to set up your project list before using the application.\n\n"
-            "If you cancel without configuring any projects, the program will exit."
-        )
-        
-        dialog = ProjectsDialog([], self)
-        if dialog.exec() == QDialog.Accepted and dialog.projects:
-            self.projects = dialog.projects
-            save_projects(self.projects)
-        else:
-            # If user cancels or doesn't configure any projects, exit the program
-            QMessageBox.warning(
-                self,
-                "Setup Cancelled",
-                "Project setup was cancelled or no projects were configured.\n"
-                "The application will now exit."
-            )
-            # Close the main window, which will terminate the application
-            self.close()
-            # Use a timer to ensure the message box is closed before exiting
-            QTimer.singleShot(100, lambda: QApplication.instance().quit())
 
-    
     def setup_ui(self):
         """Set up the user interface for the main window."""
         self.setWindowTitle("Time Tracking CSV Generator")
@@ -624,6 +596,109 @@ class MainWindow(QMainWindow):
         projects_label.setFont(font)
         projects_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(projects_label)
+
+    
+    def setup_initial_projects(self):
+        """Set up initial projects if none exist."""
+        # Show message explaining the importance of setting up projects
+        QMessageBox.information(
+            self,
+            "Project Setup Required",
+            "You need to set up your project list before using the application.\n\n"
+            "If you cancel without configuring any projects, the program will exit."
+        )
+        
+        dialog = ProjectsDialog([], self)
+        if dialog.exec() == QDialog.Accepted and dialog.projects:
+            self.projects = dialog.projects
+            save_projects(self.projects)
+        else:
+            # If user cancels or doesn't configure any projects, exit the program
+            QMessageBox.warning(
+                self,
+                "Setup Cancelled",
+                "Project setup was cancelled or no projects were configured.\n"
+                "The application will now exit."
+            )
+            # Close the main window, which will terminate the application
+            self.close()
+            # Use a timer to ensure the message box is closed before exiting
+            QTimer.singleShot(100, lambda: QApplication.instance().quit())
+    
+    def edit_projects(self):
+        """Edit project list."""
+        dialog = ProjectsDialog(self.projects, self)
+        if dialog.exec() == QDialog.Accepted:
+            self.projects = dialog.projects
+            save_projects(self.projects)
+    
+    def create_single_entry(self):
+        """Show dialog to create a single time tracking entry."""
+        # Check if today is a business day
+        today = datetime.datetime.now().weekday()
+        if today >= 5:  # Saturday or Sunday
+            QMessageBox.information(
+                self, 
+                "Weekend", 
+                f"Today is {'Saturday' if today == 5 else 'Sunday'}. Skipping timetracking."
+            )
+            return
+        
+        dialog = TimeEntryDialog(self.projects, use_scheduler=False, parent=self)
+        if dialog.exec() == QDialog.Accepted:
+            self.create_csv_entry(dialog.project_name, dialog.start_time, dialog.end_time)
+    
+    def create_csv_entry(self, project_name, start_time, end_time):
+        """Create an entry in the CSV file."""
+        # Format data for CSV - using MM/DD/YYYY format
+        start_date = start_time.strftime("%m/%d/%Y")
+        start_time_str = start_time.strftime("%H:%M")
+        end_date = end_time.strftime("%m/%d/%Y")
+        end_time_str = end_time.strftime("%H:%M")
+        subject = f"Timetracking: {project_name}"
+        
+        # Create entry in CSV file - always append to end of file
+        with open(CSV_FILE, 'a', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=CSV_HEADERS)
+            writer.writerow({
+                'Subject': subject,
+                'Start Date': start_date,
+                'Start Time': start_time_str,
+                'End Date': end_date,
+                'End Time': end_time_str,
+                'Description': f"Time tracking for {project_name}"
+            })
+        
+        QMessageBox.information(self, "Success", f"Entry added: {subject} on {start_date} at {start_time_str}")
+    
+    def start_scheduler(self):
+        """Start the scheduler window."""
+        self.scheduler_window = SchedulerWindow(self.projects)
+        self.scheduler_window.show()
+    
+    def show_instructions(self):
+        """Show instructions for importing the CSV file into Google Calendar."""
+        msg = "How to import the CSV file into Google Calendar:\n\n"
+        msg += "1. Go to calendar.google.com\n"
+        msg += "2. Click on the gear icon (Settings) in the top-right corner\n"
+        msg += "3. Select 'Settings'\n"
+        msg += "4. In the left sidebar, click 'Import & export'\n"
+        msg += "5. Click 'Select file from your computer' and select your CSV file\n"
+        msg += "6. Choose the calendar to import events to\n"
+        msg += "7. Click 'Import'\n\n"
+        msg += f"Your CSV file is located at:\n{os.path.abspath(CSV_FILE)}"
+        
+        # Create message box with scrollable text area
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Import Instructions")
+        msg_box.setText(msg)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        
+        # Adjust the size of the message box
+        text_width = QFontMetrics(msg_box.font()).horizontalAdvance('x') * 60  # 60 chars wide
+        msg_box.setMinimumWidth(text_width)
+        
+        msg_box.exec()
 
 
 def show_splash_message(message, duration=2000):
