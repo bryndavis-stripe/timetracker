@@ -7,9 +7,9 @@ Timetracker is a python script with a GUI that helps you track how you spend you
 * `pip install schedule`
   
 ## Move to an accessible location to create a shortcut and mark executable
-`mkdir -p ~/bin`
-`cp /path/to/file/run_timetracker.sh ~/bin/timetracker`
-`chmod +x ~/bin/timetracker`
+1. `mkdir -p ~/bin`
+2. `cp /path/to/file/run_timetracker.sh ~/bin/timetracker`
+3. `chmod +x ~/bin/timetracker`
 
 ## tell your bash profile to look for this executable script:
 1. `open -t ~/.bash_profile`
