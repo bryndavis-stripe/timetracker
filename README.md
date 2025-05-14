@@ -1,8 +1,8 @@
-# How to Use This Application
+# How to Use This Script
 Timetracker is a python script with a GUI that helps you track how you spend your time by creating entries that can be imported into other tools (e.g., Google Calendar). It allows you to log time against specific projects and maintain consistent time tracking throughout your workday.
 
-# Running the Application
-You can now run the script from Spotlight: timetracker.command
+# Running the Script
+You can also run the bash file, but you can also run the script from Spotlight using timetracker.command
 
 If you're running into issues running the program, make sure these libraries are installed on your machine. At the terminal use the following commands:
 * `pip3 install --upgrade PySide6`
@@ -26,3 +26,6 @@ Creates a persisted list of pre-defined projects you'll log against
 
 ## Display CSV import instructions
 Shows step-by-step instructions for importing the CSV file into Google Calendar
+
+# Issues? This was a vibecoded project after all...
+Please feel free to contact me (bryndavis) if you have issues running this
