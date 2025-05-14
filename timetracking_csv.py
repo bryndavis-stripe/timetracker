@@ -600,13 +600,6 @@ class MainWindow(QMainWindow):
     
     def setup_initial_projects(self):
         """Set up initial projects if none exist."""
-        # Show message explaining the importance of setting up projects
-        QMessageBox.information(
-            self,
-            "Project Setup Required",
-            "You need to set up your project list before using the application.\n\n"
-            "If you cancel without configuring any projects, the program will exit."
-        )
         
         dialog = ProjectsDialog([], self)
         if dialog.exec() == QDialog.Accepted and dialog.projects:
